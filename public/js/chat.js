@@ -26,6 +26,7 @@ $(function(){
 		var li = document.createElement('li');
 		li.innerHTML = "<b>"+ speaker + "</b>: " + data;
 		$("#chatTable").append(li);
+		$("#chatTable").scrollTop($("#chatTable")[0].scrollHeight);
 	}
 	
 	$("#chatForm").on("submit", function(e) {
