@@ -38,6 +38,17 @@ var chat = io.of('/socket').on('connection', function (socket) {
 		}
 	});
 	
+	socket.on("changename", function(newName) {
+		var arrLen = connected.length;
+		for (var i=0 ; i<arrLen ; i++) {
+			if (connected[i] != socket) {
+				connected[i].emit("changename", name, newName);
+			}
+		}
+		name = newName;
+
+	});
+	
 	socket.on('disconnect', function() {
 		var index = connected.indexOf(socket);
 		if (index != -1) {
@@ -48,5 +59,5 @@ var chat = io.of('/socket').on('connection', function (socket) {
 				connected[i].emit("leaving", name);
 			}
 		}
-	});
+	});	
 });

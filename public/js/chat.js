@@ -1,11 +1,12 @@
 $(function(){
 	// connect to the socket
 	var socket = io.connect('/socket');
-	console.log("hit");
+	//console.log("hit");
+	var myName = $("#chatName").val();
 	
 	// on connection to server get the id of person's room
 	socket.on('connect', function(){
-		socket.emit('connected', $("#chatName").val());
+		socket.emit('connected', myName);
 		showMsg("system", "loaded");
 	});
 	
@@ -15,6 +16,10 @@ $(function(){
 	
 	socket.on('leaving', function(name) {
 		showMsg("system", name + " is leaving");
+	});
+	
+	socket.on('changename', function(oldname, newname) {
+		showMsg("system", oldname + " is changing his/her name to: " + newname);
 	});
 	
 	function showMsg(speaker, data) {
@@ -29,12 +34,21 @@ $(function(){
 		if (!isValidChatter($("#chatName").val())) { return; }
 		if (msg.length > 0) {
 			showMsg("me", msg);
+			$("#chatInput").val("");
 			// scroll to bottom
 			// filter out html
 			socket.emit("msg", msg);
 		}
 		
 	});	
+	
+	$("#chatName").on("focusout", function(){
+		var newName = $("#chatName").val();
+		if (newName != myName) {
+			myName = newName;
+			socket.emit("changename", newName);
+		}
+	});
 	
 	$("#chatInput").keypress(function(e){
 
