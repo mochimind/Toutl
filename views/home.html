@@ -4,7 +4,12 @@
 </head>
 <body>
 	<ul id="chatTable"></ul>
-	<input id="chatInput" value="chat text here"/>
+	<form id="chatForm">
+	<input id="chatInput" placeholder="chat text here"/>
 	<input id="chatName" value="Default Name" />
+	</form>
 
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="../js/chat.js"></script>	
 </body>
