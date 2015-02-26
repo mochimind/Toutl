@@ -11,6 +11,7 @@ var io = require('socket.io').listen(app.listen(port));
 app.set('view engine', 'html');
 app.engine('html', require('ejs').renderFile);
 app.set('views', __dirname + '/views');
+app.use(express.static(__dirname + '/public'));
 
 app.get('/', function(req, res){ 
 	res.render('home'); 

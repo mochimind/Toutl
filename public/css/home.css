@@ -1,0 +1,24 @@
+#chatTable {
+	position: absolute;
+	display: block;
+	height: 500;
+	width: 200;
+	left: 0;
+	top: 0;
+	overflow-y: scroll;
+	list-style-type: none;
+}
+
+#chatInput {
+	position: absolute;
+	width: 200;
+	left: 0;
+	top: 510;	
+}
+
+#chatName {
+	position: absolute;
+	width: 200;
+	left: 0;
+	top: 540;	
+}
