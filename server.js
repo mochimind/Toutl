@@ -19,11 +19,34 @@ app.get('/', function(req, res){
 });
 
 var chat = io.of('/socket').on('connection', function (socket) {
-	chat.emit("connect", 0);
-	connected.push(chat);
-	console.log(connected.length + " connected");
+	var name = "";
+
+	socket.on("connected", function(_name) {
+		connected.push(socket);
+		console.log(connected.length + " connected");
+		name = _name;
+	});
 	
-	socket.on("msg", function(broadcaster, msg) {
-		console.log("hit");
+	socket.on("msg", function(msg) {
+		console.log("hit " + msg);
+		var arrLen = connected.length;
+		for (var i=0 ; i<arrLen ; i++) {
+			if (connected[i] != socket) {
+				console.log("found 1");
+				connected[i].emit("receiveMsg", name, msg);
+			}
+		}
+	});
+	
+	socket.on('disconnect', function() {
+		var index = connected.indexOf(socket);
+		if (index != -1) {
+			connected.splice(index, 1);
+			console.log("disconnecting 1");
+			var arrLen = connected.length;
+			for (var i=0 ; i<arrLen ; i++){
+				connected[i].emit("leaving", name);
+			}
+		}
 	});
 });

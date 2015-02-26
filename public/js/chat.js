@@ -5,9 +5,16 @@ $(function(){
 	
 	// on connection to server get the id of person's room
 	socket.on('connect', function(){
-
-		socket.emit('load');
+		socket.emit('connected', $("#chatName").val());
 		showMsg("system", "loaded");
+	});
+	
+	socket.on('receiveMsg', function(name, msg) {
+		showMsg(name, msg);
+	});
+	
+	socket.on('leaving', function(name) {
+		showMsg("system", name + " is leaving");
 	});
 	
 	function showMsg(speaker, data) {
@@ -19,15 +26,27 @@ $(function(){
 	$("#chatForm").on("submit", function(e) {
 		e.preventDefault();
 		var msg = $("#chatInput").val().trim();
-		if (!isValidChatterName($("#chatName").value)) { return; }
+		if (!isValidChatter($("#chatName").val())) { return; }
 		if (msg.length > 0) {
 			showMsg("me", msg);
 			// scroll to bottom
 			// filter out html
-			socket.emit("msg", $("#chatName").value, msg);
+			socket.emit("msg", msg);
 		}
 		
 	});	
+	
+	$("#chatInput").keypress(function(e){
+
+		// Submit the form on enter
+
+		if(e.which == 13) {
+			e.preventDefault();
+			$("#chatForm").trigger('submit');
+		}
+
+	});
+
 	
 	function isValidChatter(name) {
 		if (name.length) { return true; }
