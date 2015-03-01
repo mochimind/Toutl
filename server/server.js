@@ -1,3 +1,5 @@
+var Toutl = {};
+
 // note need to run this as root
 
 var express = require('express');
