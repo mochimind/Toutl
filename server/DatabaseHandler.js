@@ -36,14 +36,16 @@ exports.createMessage = function(poster, message, parent, errorCallback, okCallb
 			return;
 		}
 		
-		console.log('connected as id ' + connection.threadId);
 		// really should check for sql injection here
-		connection.query('INSERT INTO posts (msg, parentID, poster) values ("' + 
-				message + '",' +
-				parent + '",' +
-				poster + '")', 
+		var query = 'INSERT INTO posts (msg, parentID, poster) values ("' + 
+			message + '","' +
+			parent + '","' +
+			poster + '")';
+		console.log("query string is: " + query);
+		connection.query(query, 
 			function (insertError, result, fields) {
 			if (insertError) {
+				console.log("error: " + insertError.message);
 				errorCallback(message, insertError);
 			} else {
 				okCallback(message, result.ID);				
@@ -68,13 +70,13 @@ exports.loadView = function(id, errorCallback, okCallback) {
 			return;
 		}
 		
-		console.log('connected as id ' + connection.threadId);
-		connection.query('SELECT * FROM posts WHERE parent = ' + id, 
+		connection.query('SELECT * FROM posts WHERE parentID = ' + id, 
 			function (queryError, result, fields) {
 			if (queryError) {
+				console.log("error: " + queryError.message);
 				errorCallback(id, queryError);
 			} else {
-				okCallback(id, result);		
+				okCallback(id, result);
 			}
 			connection.release();
 		});

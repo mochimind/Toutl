@@ -16,16 +16,27 @@ $(function(){
 		Toutl.Interface.ChangeView(parent, children);		
 	});
 	
+	socket.on('newmsg', function(poster, msg) {
+		// TODO: this is a hack for testing, fix
+		Toutl.Interface.ShowMsg(poster, msg, Toutl.Interface.ChildClass);		
+	});
+	
+	socket.on('problem', function(request, message) {
+		console.log("received: " + request + "||" + message);
+		alert("Error processing request: " + request + " - " + message);		
+	});
+	
 	$("#chatForm").on("submit", function(e) {
 		e.preventDefault();
 		var msg = $("#chatInput").val().trim();
 		if (!isValidChatter($("#chatName").val())) { return; }
 		if (msg.length > 0) {
-			showMsg("me", msg);
 			$("#chatInput").val("");
 			// scroll to bottom
 			// filter out html
 			socket.emit("msg", msg);
+			// TODO: check that the post was successful before posting it finally
+			Toutl.Interface.ShowMsg(myName, msg);
 		}
 		
 	});	
@@ -52,7 +63,7 @@ $(function(){
 	
 	function isValidChatter(name) {
 		if (name.length) { return true; }
-		showMsg("system", "you need to choose another name");
+		alert("you need to choose another name");
 		return false;
 	}
 	

@@ -14,6 +14,6 @@ exports.deregisterClient = function(handler) {
 exports.broadcast = function(lineage, message) {
 	var clen = clients.length;
 	for (var i=0 ; i<clen ; i++) {
-		clients[i].handlePost(lineage, message);
+		clients[i].handlePost.bind(clients[i])(lineage, message);
 	}
 };
