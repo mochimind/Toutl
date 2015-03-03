@@ -9,6 +9,14 @@
 	list-style-type: none;
 }
 
+.chatParent {
+	color: blue;
+}
+
+.chatChild {
+	color: red;
+}
+
 #chatInput {
 	position: absolute;
 	width: 200;

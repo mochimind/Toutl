@@ -9,47 +9,51 @@ exports.Handler = function(_socket) {
 	this.socket.on("connected", function(_name) {		
 		this.name = _name;
 		switchbox.registerClient(this);
-	});
+	}.bind(this));
 	
 	this.socket.on("msg", function(msg) {
 		switchbox.broadcast(lineage, msg);
 		
 		// database update
-		var newID = db.createMessage(this.name, msg, this.sendError, this.confirmPost);
-	});
+		var newID = db.createMessage(this.name, msg, this.sendError.bind(this), this.confirmPost.bind(this));
+	}.bind(this));
 	
 	this.socket.on("changename", function(newName) {
-		name = newName;
-	});
+		this.name = newName;
+	}.bind(this));
 	
 	this.socket.on("gotochild", function(id) {
-		lineage.push(id);
+		this.lineage.push(id);
 		
 		//load view from database
-		db.loadView(id, this.sendError, this.updateView);
-	});
+		db.loadView(id, this.sendError.bind(this), this.updateView.bind(this));
+	}.bind(this));
+	
+	this.socket.on('init', function() {
+		this.lineage.push(0);
+		db.loadView(0, this.sendError.bind(this), this.updateView.bind(this));
+	}.bind(this));
 	
 	this.socket.on("gotoparent", function() {
-		lineage.splice(lineage.length - 1, 1);
+		this.lineage.splice(this.lineage.length - 1, 1);
 		
 		// load view from database
-		db.loadView(lineage[lineage.length - 1], this.sendError, this.updateView);
-	});
+		db.loadView(this.lineage[this.lineage.length - 1], this.sendError.bind(this), this.updateView.bind(this));
+	}.bind(this));
 	
 	this.socket.on('disconnect', function() {
 		switchbox.deregisterClient(this);
 		// TODO: may need to kill socket to finish GC
-	});	
+	}.bind(this));	
 };
 
-
 // TODO: we should have these send requestIDs and not messages to the database and client for callback
-exports.Handler.prototype.handlePost = function(_lineage, message) {
+exports.Handler.HandlePost = function(_lineage, message) {
 	console.log("implement handling post");
 };
 
 exports.Handler.prototype.sendError = function(caller, msg) {
-	this.socket.emit('error', caller, ', ', msg);
+	this.socket.emit('error ',  caller,  msg);
 };
 
 exports.Handler.prototype.confirmPost = function(msg, id) {

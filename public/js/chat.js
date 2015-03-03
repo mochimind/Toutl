@@ -1,3 +1,5 @@
+var Toutl = {};
+
 $(function(){
 	// connect to the socket
 	var socket = io.connect('/socket');
@@ -7,27 +9,12 @@ $(function(){
 	// on connection to server get the id of person's room
 	socket.on('connect', function(){
 		socket.emit('connected', myName);
-		showMsg("system", "loaded");
+		socket.emit('init');
 	});
 	
-	socket.on('receiveMsg', function(name, msg) {
-		showMsg(name, msg);
+	socket.on('updateview', function(parent, children) {
+		Toutl.Interface.ChangeView(parent, children);		
 	});
-	
-	socket.on('leaving', function(name) {
-		showMsg("system", name + " is leaving");
-	});
-	
-	socket.on('changename', function(oldname, newname) {
-		showMsg("system", oldname + " is changing his/her name to: " + newname);
-	});
-	
-	function showMsg(speaker, data) {
-		var li = document.createElement('li');
-		li.innerHTML = "<b>"+ speaker + "</b>: " + data;
-		$("#chatTable").append(li);
-		$("#chatTable").scrollTop($("#chatTable")[0].scrollHeight);
-	}
 	
 	$("#chatForm").on("submit", function(e) {
 		e.preventDefault();

@@ -3,8 +3,8 @@ var mysql = require('mysql');
 var pool = mysql.createPool({
 	connectionLimit: 100,
 	host: 'localhost',
-	user: 'toutl',
-	password: 'israelxie',
+	user: 'root',
+	password: 'southbend',
 	database: 'toutl',
 	debug: false
 });
@@ -30,6 +30,7 @@ exports.createMessage = function(poster, message, parent, errorCallback, okCallb
 	// upload to database
 	pool.getConnection(function(err, connection) {
 		if (err) {
+			console.log(err);
 			conection.release();
 			errorCallback(message, 'could not connect to database');
 			return;
@@ -61,7 +62,8 @@ exports.loadView = function(id, errorCallback, okCallback) {
 	
 	pool.getConnection(function(err, connection) {
 		if (err) {
-			conection.release();
+			console.log(err);
+			connection.release();
 			errorCallback(id, 'could not connect to database');
 			return;
 		}
