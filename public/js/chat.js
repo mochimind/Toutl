@@ -30,7 +30,7 @@ $(function(){
 	});
 	
 	Toutl.Chat.socket.on('updateview', function(parent, children) {
-		Toutl.MessageDisplay.ChangeView(parent, children);		
+		Toutl.MessageDisplay.DisplayChannels(children);		
 	});
 	
 	Toutl.Chat.socket.on('newmsg', function(poster, msg) {
