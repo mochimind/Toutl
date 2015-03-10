@@ -1,32 +1,45 @@
+#banner {
+	position: absolute;
+	left: 0;
+	top: 0;
+}
+
 #chatTable {
 	position: absolute;
 	display: block;
 	height: 500;
-	width: 200;
+	width: 300;
 	left: 0;
-	top: 0;
+	top: 20;
 	overflow-y: scroll;
 	list-style-type: none;
 }
 
 .chatParent {
 	color: blue;
+	cursor: pointer;
 }
 
 .chatChild {
 	color: red;
 }
 
+#buttonBar {
+	position:absolute;
+	left: 0;
+	top: 600;
+}
+
 #chatInput {
 	position: absolute;
 	width: 200;
 	left: 0;
-	top: 510;	
+	top: 540;	
 }
 
 #chatName {
 	position: absolute;
 	width: 200;
 	left: 0;
-	top: 540;	
+	top: 570;	
 }

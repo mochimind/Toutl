@@ -13,7 +13,7 @@ exports.Handler = function(_socket) {
 	
 	this.socket.on("msg", function(msg) {
 		console.log("received message");
-		switchbox.broadcast(this.lineage);
+		switchbox.broadcast(this.lineage, this.name, msg);
 		
 		// database update
 		var newID = db.createMessage(this.name, msg, this.lineage[this.lineage.length - 1], this.sendError.bind(this), this.confirmPost.bind(this));
@@ -54,9 +54,9 @@ exports.Handler = function(_socket) {
 };
 
 // TODO: we should have these send requestIDs and not messages to the database and client for callback
-exports.Handler.prototype.handlePost = function(_lineage, message) {
+exports.Handler.prototype.handlePost = function(_lineage, poster, message) {
 	// TODO: this is a hack, implement this properly
-	this.socket.emit();
+	this.socket.emit('newmsg', poster, message);
 };
 
 exports.Handler.prototype.sendError = function(caller, msg) {

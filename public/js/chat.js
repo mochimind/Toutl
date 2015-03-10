@@ -1,70 +1,45 @@
 var Toutl = {};
+Toutl.Chat = {};
+
+Toutl.Chat.CreateChannel = function(message) {
+	Toutl.Chat.socket.emit("create_chan", message);
+};
+
+Toutl.Chat.CreateMessage = function(message) {
+	Toutl.Chat.socket.emit("create_msg", message);
+};
+
+Toutl.Chat.UpdateName = function(newName) {
+	socket.emit("changename", newName);
+};
+
+Toutl.Chat.RequestView = function(channelID) {
+	
+};
 
 $(function(){
 	// connect to the socket
-	var socket = io.connect('/socket');
+	Toutl.Chat.socket = io.connect('/socket');
+	Toutl.GUIDisplay.Init();
 	//console.log("hit");
-	var myName = $("#chatName").val();
 	
 	// on connection to server get the id of person's room
-	socket.on('connect', function(){
-		socket.emit('connected', myName);
-		socket.emit('init');
+	Toutl.Chat.socket.on('connect', function(){
+		Toutl.Chat.socket.emit('connected', Toutl.GUIDisplay.myName);
+		Toutl.Chat.socket.emit('init');
 	});
 	
-	socket.on('updateview', function(parent, children) {
-		Toutl.Interface.ChangeView(parent, children);		
+	Toutl.Chat.socket.on('updateview', function(parent, children) {
+		Toutl.MessageDisplay.ChangeView(parent, children);		
 	});
 	
-	socket.on('newmsg', function(poster, msg) {
+	Toutl.Chat.socket.on('newmsg', function(poster, msg) {
 		// TODO: this is a hack for testing, fix
-		Toutl.Interface.ShowMsg(poster, msg, Toutl.Interface.ChildClass);		
+		Toutl.MessageDisplay.ShowMsg(poster, msg, Toutl.MessageDisplay.ChildClass);
 	});
 	
-	socket.on('problem', function(request, message) {
+	Toutl.Chat.socket.on('problem', function(request, message) {
 		console.log("received: " + request + "||" + message);
 		alert("Error processing request: " + request + " - " + message);		
-	});
-	
-	$("#chatForm").on("submit", function(e) {
-		e.preventDefault();
-		var msg = $("#chatInput").val().trim();
-		if (!isValidChatter($("#chatName").val())) { return; }
-		if (msg.length > 0) {
-			$("#chatInput").val("");
-			// scroll to bottom
-			// filter out html
-			socket.emit("msg", msg);
-			// TODO: check that the post was successful before posting it finally
-			Toutl.Interface.ShowMsg(myName, msg);
-		}
-		
 	});	
-	
-	$("#chatName").on("focusout", function(){
-		var newName = $("#chatName").val();
-		if (newName != myName) {
-			myName = newName;
-			socket.emit("changename", newName);
-		}
-	});
-	
-	$("#chatInput").keypress(function(e){
-
-		// Submit the form on enter
-
-		if(e.which == 13) {
-			e.preventDefault();
-			$("#chatForm").trigger('submit');
-		}
-
-	});
-
-	
-	function isValidChatter(name) {
-		if (name.length) { return true; }
-		alert("you need to choose another name");
-		return false;
-	}
-	
 });

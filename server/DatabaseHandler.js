@@ -9,7 +9,6 @@ var pool = mysql.createPool({
 	debug: false
 });
 
-
 exports.createMessage = function(poster, message, parent, errorCallback, okCallback) {
 	// check the poster name is valid
 	if (poster.length > 128) {

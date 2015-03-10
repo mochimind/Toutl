@@ -11,9 +11,10 @@ exports.deregisterClient = function(handler) {
 	}
 };
 
-exports.broadcast = function(lineage, message) {
+exports.broadcast = function(lineage, poster, message) {
 	var clen = clients.length;
 	for (var i=0 ; i<clen ; i++) {
-		clients[i].handlePost.bind(clients[i])(lineage, message);
+		console.log("broadcasting: " + poster + "||" + message);
+		clients[i].handlePost.bind(clients[i])(lineage, poster, message);
 	}
 };

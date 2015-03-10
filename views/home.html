@@ -3,14 +3,24 @@
 	<link rel="stylesheet" type="text/css" href="../css/home.css">
 </head>
 <body>
+	<label id='banner'></label>
 	<ul id="chatTable"></ul>
 	<form id="chatForm">
 	<input id="chatInput" placeholder="chat text here"/>
 	<input id="chatName" value="Default Name" />
 	</form>
-
+	
+	<div id='buttonBar'>
+	<button id='channels'>Channels</button>
+	<button id='feeds'>Feeds</button>
+	<button id='friendConvo'>Convos</button>
+	<button id='settings'>Settings</button>
+	<button id='back'>Back</button>
+	</div>
+	
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
 	<script src="../js/chat.js"></script>	
-	<script src="../js/Interface.js"></script>	
+	<script src="../js/MessageDisplay.js"></script>	
+	<script src="../js/GUIDisplay.js"></script>	
 </body>
