@@ -22,5 +22,5 @@ app.get('/', function(req, res){
 });
 
 io.of('/socket').on('connection', function (socket) {
-	new handler.Handler(socket);
+	handler.Initialize(socket);
 });

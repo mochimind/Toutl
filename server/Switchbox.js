@@ -11,10 +11,26 @@ exports.deregisterClient = function(handler) {
 	}
 };
 
-exports.broadcast = function(lineage, poster, message) {
+exports.newChannel = function(channelID, caller, message) {
 	var clen = clients.length;
 	for (var i=0 ; i<clen ; i++) {
-		console.log("broadcasting: " + poster + "||" + message);
-		clients[i].handlePost.bind(clients[i])(lineage, poster, message);
+		if (clients[i] != caller) {
+			console.log("broadcasting: " + caller.name + "||" + message);			
+			clients[i].handleNewChannel.bind(clients[i])(channelID, caller.name, message);
+		} else {
+			console.log('skipped broadcasting');
+		}
+	}
+};
+
+exports.newMessage = function(parentID, caller, message) {
+	var clen = clients.length;
+	for (var i=0 ; i<clen ; i++) {
+		if (clients[i] != caller) {
+			console.log("broadcasting: " + caller.name + "||" + message);			
+			clients[i].handleNewMessage.bind(clients[i])(parentID, caller.name, message);
+		} else {
+			console.log('skipped broadcasting');
+		}
 	}
 };

@@ -20,9 +20,11 @@ Toutl.GUIDisplay.Init = function() {
 	});
 	
 	$("#chatName").on("focusout", function(){
+		if (!Toutl.GUIDisplay.IsValidChatter($("#chatName").val())) { return; }
 		var newName = $("#chatName").val();
+		$('#chatName').val("changing name")
+			.prop('disabled', true);
 		if (newName != Toutl.GUIDisplay.myName) {
-			Toutl.GUIDisplay.myName = newName;
 			Toutl.Chat.UpdateName(newName);
 		}
 	});
@@ -31,6 +33,8 @@ Toutl.GUIDisplay.Init = function() {
 };
 
 Toutl.GUIDisplay.LoadChannels = function() {
+	// TODO: this is a hack, we will have many different ways to sort in the future
+	Toutl.GUIDisplay.curView = 0;
 	$('#banner').text('Active Channels: ');
 	$('#chatInput').prop('placeholder', 'new channel name');
 	$('#back').hide();
@@ -38,18 +42,15 @@ Toutl.GUIDisplay.LoadChannels = function() {
 	$("#chatForm").on("submit", function(e) {
 		e.preventDefault();
 		var msg = $("#chatInput").val().trim();
-		if (!Toutl.GUIDisplay.IsValidChatter($("#chatName").val())) { return; }
 		if (msg.length > 0) {
 			$("#chatInput").val("");
 			Toutl.Chat.CreateChannel(msg);
-			// scroll to bottom
 			// TODO: filter out html
 			// TODO: check that the post was successful before posting it finally
-			//sToutl.MessageDisplay.ShowMsg(myName, msg);
 		}
-		
 	});		
 
+	Toutl.Chat.RequestView(0);
 };
 
 Toutl.GUIDisplay.IsValidChatter = function (name) {
@@ -58,7 +59,14 @@ Toutl.GUIDisplay.IsValidChatter = function (name) {
 	return false;
 };
 
-Toutl.GUIDisplay.LoadMessages = function() {
+Toutl.GUIDisplay.ChangeName = function(name) {
+	Toutl.GUIDisplay.myName = newName;
+	$('#chatName').val(newName)
+		.prop('disabled', false);
+};
+
+Toutl.GUIDisplay.LoadMessages = function(chanID) {
+	Toutl.GUIDisplay.curView = chanID;
 	$('#back').show();
 	$('#chatInput').prop('placeholder', 'chat text here');
 	$('#banner').text('Channel Messages: ');

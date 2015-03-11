@@ -4,74 +4,79 @@ var db = require('./DatabaseHandler');
 exports.Handler = function(_socket) {
 	this.socket = _socket;
 	this.name = "";
-	this.lineage = [];
+	this.curView = 0;
+};
+
+exports.Initialize = function(_socket) {
+	var outObj = {
+			'socket': _socket,
+			'name': "",
+			'curView': 0
+	};
 	
-	this.socket.on("connected", function(_name) {		
-		this.name = _name;
-		switchbox.registerClient(this);
-	}.bind(this));
+	outObj.socket.on("connected", function(_name) {		
+		outObj.name = _name;
+		console.log('connected: ' + outObj.name);
+		switchbox.registerClient(outObj);
+	});
 	
-	this.socket.on("msg", function(msg) {
-		console.log("received message");
-		switchbox.broadcast(this.lineage, this.name, msg);
-		
+	outObj.socket.on('create_chan', function(params) {
+		console.log('received channel creation request: ' + params);
 		// database update
-		var newID = db.createMessage(this.name, msg, this.lineage[this.lineage.length - 1], this.sendError.bind(this), this.confirmPost.bind(this));
-	}.bind(this));
+		var newID = db.createChannel(outObj, params.message, exports.sendError, exports.confirmPost);
+		switchbox.newChannel(newID, outObj, params.message, newID);
+	});
 	
-	this.socket.on("changename", function(newName) {
-		console.log("changing name");
-		this.name = newName;
-	}.bind(this));
+	outObj.socket.on('create_msg', function(params) {
+		console.log('received msg creation request: ' + params);
+		var newID = db.createMessage(outObj, params.message, params.parent, exports.sendError, exports.confirmPost);
+		switchbox.newMessage(params.parent, outObj, params.message);
+	});
 	
-	this.socket.on("gotochild", function(id) {
-		console.log("going to child");
-		this.lineage.push(id);
-		
-		//load view from database
-		db.loadView(id, this.sendError.bind(this), this.updateView.bind(this));
-	}.bind(this));
+	outObj.socket.on("changename", function(params, id) {
+		console.log("changing name: " + params);
+		outObj.name = params.newName;
+		outObj.socket.emit('response', id, {'newName': outObj.name});
+	});
 	
-	this.socket.on('init', function() {
-		console.log("initializing");
-		this.lineage.push(0);
-		db.loadView(0, this.sendError.bind(this), this.updateView.bind(this));
-	}.bind(this));
+	outObj.socket.on('changeview', function(params, id) {
+		console.log("changing view: " + params + "||" + id);
+		db.loadView(params.channel, outObj, exports.sendError, function(handler, parent, children) {
+			handler.socket.emit('response', id, {'messages': children, 'parent': params.channel});
+		});
+	});
 	
-	this.socket.on("gotoparent", function() {
-		console.log("going to parent");
-		this.lineage.splice(this.lineage.length - 1, 1);
-		
-		// load view from database
-		db.loadView(this.lineage[this.lineage.length - 1], this.sendError.bind(this), this.updateView.bind(this));
-	}.bind(this));
-	
-	this.socket.on('disconnect', function() {
+	outObj.socket.on('disconnect', function() {
 		console.log("disconnecting");
 		switchbox.deregisterClient(this);
 		// TODO: may need to kill socket to finish GC
-	}.bind(this));	
+		outObj.socket = undefined;
+	});	
+
 };
 
-// TODO: we should have these send requestIDs and not messages to the database and client for callback
-exports.Handler.prototype.handlePost = function(_lineage, poster, message) {
+exports.handleNewMessage = function(handler, parent, message) {
+	if (handler.curView == parent) {
+		handler.socket.emit('newchan', handler.name, message, id);
+	}
+};
+
+exports.handleNewChannel = function(handler, chanID, message) {
 	// TODO: this is a hack, implement this properly
-	this.socket.emit('newmsg', poster, message);
+	if (handler.curView == 0) {
+		handler.socket.emit('newmsg', handler.name, message, chanID);		
+	}
 };
 
-exports.Handler.prototype.sendError = function(caller, msg) {
+exports.sendError = function(handler, caller, msg) {
 	console.log("emitting error");
-	this.socket.emit('problem',  caller,  msg);
+	handler.socket.emit('problem',  caller,  msg);
 };
 
-exports.Handler.prototype.confirmPost = function(msg, id) {
+exports.confirmPost = function(handler, msg, id) {
 	console.log("confirming");
-	this.socket.emit('confirm', msg, id);
+	handler.socket.emit('confirm', msg, id);
 };
 
-exports.Handler.prototype.updateView = function(parent, children) {
-	console.log("updating view");
-	this.socket.emit('updateview', parent, children);
-};
 
 

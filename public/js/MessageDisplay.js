@@ -5,10 +5,12 @@ Toutl.MessageDisplay.ParentClass = "chatParent";
 Toutl.MessageDisplay.ChildClass = "chatChild";
 
 Toutl.MessageDisplay.DisplayChannels = function(children) {
+	console.log('displaying channels');
 	// this is the top level view
 	Toutl.MessageDisplay.ClearMessageDisplay();
 
 	var childCount = children.length;
+	console.log('count is: ' + childCount);
 	for (var i=0 ; i<children.length ; i++) {
 		Toutl.MessageDisplay.NewChannel(children[i].poster, children[i].msg, children[i].ID);
 	}
@@ -25,7 +27,7 @@ Toutl.MessageDisplay.NewChannel = function (speaker, data, id) {
 	var li = $("<li><p><b>" + data + "</b> - " + speaker + "</p></li>")
 		.addClass(Toutl.MessageDisplay.ParentClass)
 		.click(function() {
-			Toutl.GUIDisplay.LoadMessages();
+			Toutl.GUIDisplay.LoadMessages(id);
 			Toutl.Chat.RequestView(id);
 			Toutl.MessageDisplay.ClearMessageDisplay();
 			Toutl.MessageDisplay.NewChannel(speaker, data, id);
