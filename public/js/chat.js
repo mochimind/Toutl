@@ -4,6 +4,7 @@ Toutl.Chat = {};
 Toutl.Chat.CreateChannel = function(message) {
 	Toutl.ServerConnection.CreateRequest('create_chan', {'message': message}, function(id, params) {
 		// TODO: this is a hack, we need to think more on what to do when a channel is created
+		console.log("hit: " + Toutl.GUIDisplay.curView);
 		if (Toutl.GUIDisplay.curView == 0) {
 			Toutl.MessageDisplay.NewChannel(params.speaker, params.message, params.id);
 		}		
@@ -24,7 +25,7 @@ Toutl.Chat.CreateMessage = function(message, parent) {
 
 Toutl.Chat.UpdateName = function(newName) {
 	Toutl.ServerConnection.CreateRequest('changename', {'newName': newName}, function(id, params) {
-		Toutl.GUIDisplay.changeName(params.newName);
+		Toutl.GUIDisplay.ChangeName(params.newName);
 	}, Toutl.Chat.HandleError);
 };
 

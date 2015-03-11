@@ -60,8 +60,8 @@ Toutl.GUIDisplay.IsValidChatter = function (name) {
 };
 
 Toutl.GUIDisplay.ChangeName = function(name) {
-	Toutl.GUIDisplay.myName = newName;
-	$('#chatName').val(newName)
+	Toutl.GUIDisplay.myName = name;
+	$('#chatName').val(name)
 		.prop('disabled', false);
 };
 

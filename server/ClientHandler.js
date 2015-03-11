@@ -20,16 +20,28 @@ exports.Initialize = function(_socket) {
 		switchbox.registerClient(outObj);
 	});
 	
-	outObj.socket.on('create_chan', function(params) {
-		console.log('received channel creation request: ' + params);
+	outObj.socket.on('create_chan', function(params, id) {
+		console.log('received channel creation request: ' + id + "||" + params);
 		// database update
-		var newID = db.createChannel(outObj, params.message, exports.sendError, exports.confirmPost);
+		var newID = db.createChannel(outObj, params.message, function(handler, caller, msg) {
+			console.log("emitting error");
+			outObj.socket.emit('error', id, {'message': msg});
+		}, function(handler, msg, chanID) {
+			console.log("confirming: " + handler + "||" + handler.socket);
+			outObj.socket.emit('response', id, {'speaker': outObj.name, 'message': msg, 'id': chanID});
+		});
 		switchbox.newChannel(newID, outObj, params.message, newID);
 	});
 	
 	outObj.socket.on('create_msg', function(params) {
 		console.log('received msg creation request: ' + params);
-		var newID = db.createMessage(outObj, params.message, params.parent, exports.sendError, exports.confirmPost);
+		var newID = db.createMessage(outObj, params.message, params.parent, function(handler, caller, msg) {
+			console.log("emitting error");
+			outObj.socket.emit('error', id, {'message': msg});
+		}, function(handler, msg, id) {
+			console.log("confirming: " + handler + "||" + handler.socket);
+			outObj.socket.emit('response', id, {'speaker': outObj.name, 'message': msg});
+		});
 		switchbox.newMessage(params.parent, outObj, params.message);
 	});
 	
@@ -41,14 +53,17 @@ exports.Initialize = function(_socket) {
 	
 	outObj.socket.on('changeview', function(params, id) {
 		console.log("changing view: " + params + "||" + id);
-		db.loadView(params.channel, outObj, exports.sendError, function(handler, parent, children) {
-			handler.socket.emit('response', id, {'messages': children, 'parent': params.channel});
+		db.loadView(params.channel, outObj, function(handler, caller, msg) {
+			console.log("emitting error");
+			outObj.socket.emit('error', id, {'message': msg});
+		}, function(handler, parent, children) {
+			outObj.socket.emit('response', id, {'messages': children, 'parent': params.channel});
 		});
 	});
 	
 	outObj.socket.on('disconnect', function() {
 		console.log("disconnecting");
-		switchbox.deregisterClient(this);
+		switchbox.deregisterClient(outObj);
 		// TODO: may need to kill socket to finish GC
 		outObj.socket = undefined;
 	});	
@@ -68,15 +83,6 @@ exports.handleNewChannel = function(handler, chanID, message) {
 	}
 };
 
-exports.sendError = function(handler, caller, msg) {
-	console.log("emitting error");
-	handler.socket.emit('problem',  caller,  msg);
-};
-
-exports.confirmPost = function(handler, msg, id) {
-	console.log("confirming");
-	handler.socket.emit('confirm', msg, id);
-};
 
 
 

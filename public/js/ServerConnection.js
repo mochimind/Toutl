@@ -11,6 +11,7 @@ Toutl.ServerConnection.Init = function() {
 	});
 	
 	Toutl.ServerConnection.socket.on('response', function(id, params) {
+		console.log("received response: " + id);
 		var request = Toutl.ServerConnection.requests[id];
 		if (request == undefined) { return; }
 		request.okCallback(id, params);

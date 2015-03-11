@@ -32,7 +32,6 @@ Toutl.MessageDisplay.NewChannel = function (speaker, data, id) {
 			Toutl.MessageDisplay.ClearMessageDisplay();
 			Toutl.MessageDisplay.NewChannel(speaker, data, id);
 			$('#back').click(function() {
-				Toutl.Chat.socket.emit('init');
 				Toutl.MessageDisplay.ClearMessageDisplay();
 				Toutl.GUIDisplay.LoadChannels();
 			});
