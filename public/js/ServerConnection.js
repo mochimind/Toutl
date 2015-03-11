@@ -17,7 +17,7 @@ Toutl.ServerConnection.Init = function() {
 		request.okCallback(id, params);
 	});
 
-	Toutl.ServerConnection.socket.on('error', function(id, params) {
+	Toutl.ServerConnection.socket.on('problem', function(id, params) {
 		var request = Toutl.ServerConnection.requests[id];
 		if (request == undefined) { return; }
 		
@@ -26,6 +26,7 @@ Toutl.ServerConnection.Init = function() {
 	
 	Toutl.ServerConnection.socket.on('newmsg', function(poster, msg) {
 		// TODO: this is a hack for testing, fix
+		console.log("hit");
 		Toutl.MessageDisplay.ShowMsg(poster, msg);
 	});
 

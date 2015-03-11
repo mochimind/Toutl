@@ -1,4 +1,5 @@
 var mysql = require('mysql');
+var util = require('util');
 
 var pool = mysql.createPool({
 	connectionLimit: 100,
@@ -46,12 +47,13 @@ exports.createMessage = function(handler, message, parent, errorCallback, okCall
 			handler.name + '")';
 		console.log("query string is: " + query);
 		connection.query(query, 
-			function (insertError, result, fields) {
+			function (insertError, result) {
 			if (insertError) {
 				console.log("error: " + insertError.message);
 				errorCallback(handler, message, insertError);
 			} else {
-				okCallback(handler, message, result.ID);	
+				//console.log("test: " + util.inspect(result, false, null));
+				okCallback(handler, message, result.insertId);	
 			}
 			connection.release();
 		});

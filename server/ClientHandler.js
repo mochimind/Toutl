@@ -25,20 +25,20 @@ exports.Initialize = function(_socket) {
 		// database update
 		var newID = db.createChannel(outObj, params.message, function(handler, caller, msg) {
 			console.log("emitting error");
-			outObj.socket.emit('error', id, {'message': msg});
+			outObj.socket.emit('problem', id, {'message': msg});
 		}, function(handler, msg, chanID) {
-			console.log("confirming: " + handler + "||" + handler.socket);
+			console.log("emitting: " + outObj.name + "||" + msg + "||" + chanID);
 			outObj.socket.emit('response', id, {'speaker': outObj.name, 'message': msg, 'id': chanID});
 		});
 		switchbox.newChannel(newID, outObj, params.message, newID);
 	});
 	
-	outObj.socket.on('create_msg', function(params) {
-		console.log('received msg creation request: ' + params);
+	outObj.socket.on('create_msg', function(params,id) {
+		console.log('received msg creation request: ' + params.message + "||" + params.parent);
 		var newID = db.createMessage(outObj, params.message, params.parent, function(handler, caller, msg) {
 			console.log("emitting error");
-			outObj.socket.emit('error', id, {'message': msg});
-		}, function(handler, msg, id) {
+			outObj.socket.emit('problem', id, {'message': msg});
+		}, function(handler, msg, chanID) {
 			console.log("confirming: " + handler + "||" + handler.socket);
 			outObj.socket.emit('response', id, {'speaker': outObj.name, 'message': msg});
 		});
@@ -46,17 +46,19 @@ exports.Initialize = function(_socket) {
 	});
 	
 	outObj.socket.on("changename", function(params, id) {
-		console.log("changing name: " + params);
+		console.log("changing name: " + params.newName);
 		outObj.name = params.newName;
 		outObj.socket.emit('response', id, {'newName': outObj.name});
 	});
 	
 	outObj.socket.on('changeview', function(params, id) {
-		console.log("changing view: " + params + "||" + id);
+		console.log("changing view: " + params.channel + "||" + id);
 		db.loadView(params.channel, outObj, function(handler, caller, msg) {
 			console.log("emitting error");
-			outObj.socket.emit('error', id, {'message': msg});
+			outObj.socket.emit('problem', id, {'message': msg});
 		}, function(handler, parent, children) {
+			console.log('we are sending back: ' + children.length);
+			outObj.curView = params.channel;
 			outObj.socket.emit('response', id, {'messages': children, 'parent': params.channel});
 		});
 	});
@@ -70,16 +72,17 @@ exports.Initialize = function(_socket) {
 
 };
 
-exports.handleNewMessage = function(handler, parent, message) {
-	if (handler.curView == parent) {
-		handler.socket.emit('newchan', handler.name, message, id);
+exports.handleNewMessage = function(handler, speaker, message, chanID) {
+	console.log("check: " + handler.curView + "||" + chanID);
+	if (handler.curView == chanID) {
+		handler.socket.emit('newmsg', speaker, message, chanID);
 	}
 };
 
-exports.handleNewChannel = function(handler, chanID, message) {
+exports.handleNewChannel = function(handler, speaker, message, chanID) {
 	// TODO: this is a hack, implement this properly
 	if (handler.curView == 0) {
-		handler.socket.emit('newmsg', handler.name, message, chanID);		
+		handler.socket.emit('newchan', speaker, message, chanID);		
 	}
 };
 

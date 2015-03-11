@@ -19,11 +19,13 @@ Toutl.MessageDisplay.DisplayChannels = function(children) {
 Toutl.MessageDisplay.DisplayMessages = function(children) {
 	var childCount = children.length;
 	for (var i=0 ; i<children.length ; i++) {
-		Toutl.MessageDisplay.NewMessage(children[i].poster, children[i].msg);
+		console.log("adding 1");
+		Toutl.MessageDisplay.ShowMsg(children[i].poster, children[i].msg);
 	}
 };
 
 Toutl.MessageDisplay.NewChannel = function (speaker, data, id) {
+	console.log("we got" + speaker + "||" + data + "||" + id);
 	var li = $("<li><p><b>" + data + "</b> - " + speaker + "</p></li>")
 		.addClass(Toutl.MessageDisplay.ParentClass)
 		.click(function() {

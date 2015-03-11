@@ -2,9 +2,8 @@ var Toutl = {};
 Toutl.Chat = {};
 
 Toutl.Chat.CreateChannel = function(message) {
-	Toutl.ServerConnection.CreateRequest('create_chan', {'message': message}, function(id, params) {
+	Toutl.ServerConnection.CreateRequest('create_chan', {'message': message, 'parent': Toutl.GUIDisplay.curView}, function(id, params) {
 		// TODO: this is a hack, we need to think more on what to do when a channel is created
-		console.log("hit: " + Toutl.GUIDisplay.curView);
 		if (Toutl.GUIDisplay.curView == 0) {
 			Toutl.MessageDisplay.NewChannel(params.speaker, params.message, params.id);
 		}		
@@ -17,7 +16,7 @@ Toutl.Chat.HandleError = function(id, params) {
 
 Toutl.Chat.CreateMessage = function(message, parent) {
 	Toutl.ServerConnection.CreateRequest("create_msg", {'message': message, 'parent': parent}, function(id, params) {
-		if (Toutl.GUIDisplay.curView == params.parent) {
+		if (Toutl.GUIDisplay.curView == parent) {
 			Toutl.MessageDisplay.ShowMsg(params.speaker, params.message);
 		}		
 	}, Toutl.Chat.HandleError);
@@ -31,7 +30,9 @@ Toutl.Chat.UpdateName = function(newName) {
 
 Toutl.Chat.RequestView = function(channelID) {
 	Toutl.ServerConnection.CreateRequest('changeview', {'channel': channelID}, function(id, params) {
-		if (Toutl.MessageDisplay.parentID != params.parent) { return; }
+		if (Toutl.GUIDisplay.curView != params.parent) { 
+			return; 
+		}
 		if (channelID == 0) {
 			// TODO: this is a hack, change
 			Toutl.MessageDisplay.DisplayChannels(params.messages);
