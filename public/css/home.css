@@ -18,10 +18,20 @@
 .chatParent {
 	color: blue;
 	cursor: pointer;
+	display: block;
 }
 
 .chatChild {
 	color: red;
+}
+
+.channelMessageCount {
+	float: left;
+	width: 20px;
+}
+
+.channelBody {
+	width: 260px;
 }
 
 #buttonBar {

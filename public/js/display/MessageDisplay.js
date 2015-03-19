@@ -12,7 +12,7 @@ Toutl.MessageDisplay.DisplayChannels = function(children) {
 	var childCount = children.length;
 	console.log('count is: ' + childCount);
 	for (var i=0 ; i<children.length ; i++) {
-		Toutl.MessageDisplay.NewChannel(children[i].poster, children[i].msg, children[i].ID);
+		Toutl.Channel.NewChannel(children[i].poster, children[i].msg, children[i].ID);
 	}
 };
 
@@ -22,26 +22,6 @@ Toutl.MessageDisplay.DisplayMessages = function(children) {
 		console.log("adding 1");
 		Toutl.MessageDisplay.ShowMsg(children[i].poster, children[i].msg);
 	}
-};
-
-Toutl.MessageDisplay.NewChannel = function (speaker, data, id) {
-	console.log("we got" + speaker + "||" + data + "||" + id);
-	var li = $("<li><p><b>" + data + "</b> - " + speaker + "</p></li>")
-		.addClass(Toutl.MessageDisplay.ParentClass)
-		.click(function() {
-			Toutl.ChatLobby.LoadMessages(id);
-			Toutl.Chat.RequestView(id);
-			Toutl.MessageDisplay.ClearMessageDisplay();
-			Toutl.MessageDisplay.NewChannel(speaker, data, id);
-			$('#back').click(function() {
-				Toutl.MessageDisplay.ClearMessageDisplay();
-				Toutl.ChatLobby.LoadChannels();
-			});
-		});
-		
-	$("#chatTable").append(li);
-	$("#chatTable").scrollTop($("#chatTable")[0].scrollHeight);
-	Toutl.MessageDisplay.components.push(li);
 };
 
 Toutl.MessageDisplay.ShowMsg = function (speaker, data) {

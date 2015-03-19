@@ -18,6 +18,11 @@ exports.Initialize = function(_socket) {
 		outObj.name = _name;
 		console.log('connected: ' + outObj.name);
 		switchbox.registerClient(outObj);
+		db.updateUser(outObj, _name, function(handler, caller, msg) {
+			outObj.socket.emit('problem', {'message': msg});
+		}, function(handler, msg) {
+			outObj.socket.emit('login');
+		});
 	});
 	
 	outObj.socket.on('create_chan', function(params, id) {

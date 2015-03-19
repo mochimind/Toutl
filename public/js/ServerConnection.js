@@ -32,7 +32,7 @@ Toutl.ServerConnection.Init = function() {
 
 	Toutl.ServerConnection.socket.on('newchan', function(poster, msg, chanID) {
 		// TODO: this is a hack for testing, fix
-		Toutl.MessageDisplay.NewChannel(poster, msg, chanID);
+		Toutl.Channel.NewChannel(poster, msg, chanID);
 	});	
 };
 

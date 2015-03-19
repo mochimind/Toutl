@@ -5,7 +5,7 @@ Toutl.Chat.CreateChannel = function(message) {
 	Toutl.ServerConnection.CreateRequest('create_chan', {'message': message, 'parent': Toutl.ChatLobby.curView}, function(id, params) {
 		// TODO: this is a hack, we need to think more on what to do when a channel is created
 		if (Toutl.ChatLobby.curView == 0) {
-			Toutl.MessageDisplay.NewChannel(params.speaker, params.message, params.id);
+			Toutl.Channel.NewChannel(params.speaker, params.message, params.id);
 		}		
 	}, Toutl.Chat.HandleError);
 };

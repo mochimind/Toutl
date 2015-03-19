@@ -60,6 +60,36 @@ exports.createMessage = function(handler, message, parent, errorCallback, okCall
 	});
 };
 
+exports.updateUser = function(username, handler, errorCallback, okCallback) {
+	pool.getConnection(function(err, connection) {
+		if (err) {
+			console.log(err);
+			connection.release();
+			errorCallback(handler, 'could not connect to database');
+			return;
+		}
+		
+		var date = new Date();
+		date = date.getUTCFullYear() + '-' +
+	    ('00' + (date.getUTCMonth()+1)).slice(-2) + '-' +
+	    ('00' + date.getUTCDate()).slice(-2) + ' ' + 
+	    ('00' + date.getUTCHours()).slice(-2) + ':' + 
+	    ('00' + date.getUTCMinutes()).slice(-2) + ':' + 
+	    ('00' + date.getUTCSeconds()).slice(-2);
+		connection.query('INSERT INTO users (username, login) VALUES ("' + username + '","' + date + 
+					'") ON DUPLICATE KEY Update login=VALUES(login)', 
+			function (queryError, result, fields) {
+			if (queryError) {
+				console.log("error: " + queryError.message);
+				errorCallback(handler, queryError);
+			} else {
+				okCallback(handler, result);
+			}
+			connection.release();
+		});
+	});
+};
+
 exports.loadView = function(id, handler, errorCallback, okCallback) {
 	// check the id is valid
 	if (id < 0) {
