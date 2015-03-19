@@ -29,13 +29,13 @@ Toutl.MessageDisplay.NewChannel = function (speaker, data, id) {
 	var li = $("<li><p><b>" + data + "</b> - " + speaker + "</p></li>")
 		.addClass(Toutl.MessageDisplay.ParentClass)
 		.click(function() {
-			Toutl.GUIDisplay.LoadMessages(id);
+			Toutl.ChatLobby.LoadMessages(id);
 			Toutl.Chat.RequestView(id);
 			Toutl.MessageDisplay.ClearMessageDisplay();
 			Toutl.MessageDisplay.NewChannel(speaker, data, id);
 			$('#back').click(function() {
 				Toutl.MessageDisplay.ClearMessageDisplay();
-				Toutl.GUIDisplay.LoadChannels();
+				Toutl.ChatLobby.LoadChannels();
 			});
 		});
 		

@@ -7,7 +7,7 @@ Toutl.ServerConnection.Init = function() {
 	console.log('connected');
 	
 	Toutl.ServerConnection.socket.on('connect', function(){
-		Toutl.ServerConnection.socket.emit('connected', Toutl.GUIDisplay.myName);
+		Toutl.ServerConnection.socket.emit('connected', Toutl.Landing.myName);
 	});
 	
 	Toutl.ServerConnection.socket.on('response', function(id, params) {
