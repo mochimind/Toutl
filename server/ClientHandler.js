@@ -31,14 +31,7 @@ exports.Initialize = function(_socket) {
 			console.log("emitting error");
 			outObj.socket.emit('problem', id, {'message': msg});
 	
-		}, function(handler, chanID, messages) {
-			var lastDate = 0;
-			// TODO: we can probably eliminate this loop with a sort on the database side
-			for (var i=0 ; i<messages.length ; i++) {
-				if (messages[i].lastDate > lastDate) {
-					lastDate = messages[i].lastDate;
-				}
-			}
+		}, function(handler, messages, lastDate) {
 			outObj.socket.emit('response', id, {'lastMsgTime': lastDate, "messages": messages});
 		});
 	});

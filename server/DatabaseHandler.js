@@ -60,7 +60,7 @@ exports.createMessage = function(handler, message, parent, errorCallback, okCall
 	});
 };
 
-exports.newMessages = function(handler, channel, startDate, errorCallback, okCallback) {
+exports.newMessages = function(handler, username, channel, startDate, errorCallback, okCallback) {
 	pool.getConnection(function(err, connection) {
 		if (err) {
 			console.log(err);
@@ -68,13 +68,25 @@ exports.newMessages = function(handler, channel, startDate, errorCallback, okCal
 			errorCallback(handler, 'could not connect to database');
 			return;
 		}
-		connection.query("SELECT * FROM posts WHERE parentID = " & channel & "AND created > " & startDate & " ORDER BY created ASC", 
+		var connectionStr ="";
+		if (startDate != "all") {
+			connectionStr = "SELECT * FROM posts WHERE parentID = " & channel & "AND created > " & startDate & " ORDER BY created ASC";
+		} else {
+			connectionStr = "SELECT * FROM posts WHERE parentID = " & channel & " ORDER BY created ASC";
+		}
+		connection.query(connectionSTR, 
 				function (queryError, result, fields) {
 			if (queryError) {
 				console.log("error: " + queryError.message);
 				errorCallback(handler, queryError);
 			} else {
-				okCallback(handler, result);
+				// last result contains our latest date
+				var lastDate = result[result.length-1].created;
+				okCallback(handler, result, lastDate);
+				
+				// now we need to update the messages_read table with the fact the user has read all these messages
+				connection.query('INSERT INTO messages_read (user, channel, time) VALUES ("' + username + '","' + channel + 
+					'","' + lastDate + ') ON DUPLICATE KEY Update time=VALUES(lastDate)');
 			}
 			connection.release();
 		});
@@ -148,8 +160,11 @@ exports.loadChannels = function(handler, viewerName, errorCallback, okCallback) 
 			return;
 		}
 		
-		connection.query("SELECT C.*, (SELECT COUNT(*) FROM posts AS P WHERE P.created > M.time) as msgs FROM channels as C LEFT JOIN posts as P on P.parentID = C.ID LEFT JOIN messages_read as M on M.channel=C.ID GROUP BY C.ID"
-, 
+		connection.query("SELECT * FROM channels as C LEFT JOIN " +
+				"(SELECT COUNT(*), P.parentID FROM posts as P " +
+				"LEFT JOIN messages_read as M on M.channel=P.parentID " +
+				"WHERE P.created > IFNULL(M.time, '2001-01-01 1:1:11') " +
+				"AND (M.user='" + viewerName + "' OR ISNULL(M.user)) GROUP BY P.parentID) O ON O.parentID=C.ID;", 
 			function (queryError, result, fields) {
 			if (queryError) {
 				console.log("error: " + queryError.message);
