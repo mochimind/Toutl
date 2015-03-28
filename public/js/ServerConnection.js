@@ -14,14 +14,14 @@ Toutl.ServerConnection.Init = function() {
 		console.log("received response: " + id);
 		var request = Toutl.ServerConnection.requests[id];
 		if (request == undefined) { return; }
-		request.okCallback(id, params);
+		if (request.okCallback!= null) { request.okCallback(params); }
 	});
 
 	Toutl.ServerConnection.socket.on('problem', function(id, params) {
 		var request = Toutl.ServerConnection.requests[id];
 		if (request == undefined) { return; }
 		
-		request.errCallback(id, params);
+		request.errCallback(params);
 	});
 	
 	Toutl.ServerConnection.socket.on('newmsg', function(poster, msg) {
@@ -34,6 +34,20 @@ Toutl.ServerConnection.Init = function() {
 		// TODO: this is a hack for testing, fix
 		Toutl.Channel.NewChannel(poster, msg, chanID);
 	});	
+};
+
+Toutl.ServerConnection.RegisterListener = function(messageType, callback) {
+	Toutl.ServerConnection.socket.on(messageType, function(params) {
+		callback(params);
+	});
+};
+
+Toutl.ServerConnection.RemoveListener = function(messageType, callback) {
+	if (callback != undefined) {
+		Toutl.ServerConnection.socket.removeListener(messageType, callback);		
+	} else {
+		Toutl.ServerConnection.socket.removeAllListeners(messageType);		
+	}
 };
 
 Toutl.ServerConnection.CreateRequest = function(type, params, okCallback, errCallback) {

@@ -12,8 +12,15 @@ Toutl.MessageDisplay.DisplayChannels = function(children) {
 	var childCount = children.length;
 	console.log('count is: ' + childCount);
 	for (var i=0 ; i<children.length ; i++) {
-		Toutl.Channel.NewChannel(children[i].poster, children[i].msg, children[i].ID);
+		var newMsg = Toutl.Channel.NewChannel(children[i].poster, children[i].msg, children[i].ID, true);
+		Toutl.MessageDisplay.components.push(newMsg.displayObj);
 	}
+};
+
+Toutl.MessageDisplay.DisplayComponent = function(component) {
+	children.push(component);
+	$("#chatTable").append(component);
+	$("#chatTable").scrollTop($("#chatTable")[0].scrollHeight);
 };
 
 Toutl.MessageDisplay.DisplayMessages = function(children) {

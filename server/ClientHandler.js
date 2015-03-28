@@ -25,6 +25,24 @@ exports.Initialize = function(_socket) {
 		});
 	});
 	
+	outObj.socket.on('new_messages', function(params, id) {
+		console.log("received request for new messages: " + id + "||" + params.channel + "||" + params.messagesSince);
+		var newID = db.getNewMessages(outObj, params.channel, params.messagesSince, function(handler, caller, msg) {
+			console.log("emitting error");
+			outObj.socket.emit('problem', id, {'message': msg});
+	
+		}, function(handler, chanID, messages) {
+			var lastDate = 0;
+			// TODO: we can probably eliminate this loop with a sort on the database side
+			for (var i=0 ; i<messages.length ; i++) {
+				if (messages[i].lastDate > lastDate) {
+					lastDate = messages[i].lastDate;
+				}
+			}
+			outObj.socket.emit('response', id, {'lastMsgTime': lastDate, "messages": messages});
+		});
+	});
+	
 	outObj.socket.on('create_chan', function(params, id) {
 		console.log('received channel creation request: ' + id + "||" + params);
 		// database update
@@ -67,6 +85,19 @@ exports.Initialize = function(_socket) {
 			outObj.socket.emit('response', id, {'messages': children, 'parent': params.channel});
 		});
 	});
+
+	outObj.socket.on('loadchannels', function(params, id) {
+		console.log("loading channels");
+		db.loadChannels(outObj, outObj.name, function(handler, msg) {
+			console.log("emitting error");
+			outObj.socket.emit('problem', id, {'message': msg});
+		}, function(handler, children) {
+			console.log('we are sending back: ' + children.length);
+			outObj.curView = params.channel;
+			outObj.socket.emit('response', id, {'messages': children, 'parent': params.channel});
+		});
+	});
+
 	
 	outObj.socket.on('disconnect', function() {
 		console.log("disconnecting");

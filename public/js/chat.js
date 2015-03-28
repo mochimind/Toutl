@@ -1,35 +1,18 @@
 var Toutl = {};
 Toutl.Chat = {};
 
-Toutl.Chat.CreateChannel = function(message) {
-	Toutl.ServerConnection.CreateRequest('create_chan', {'message': message, 'parent': Toutl.ChatLobby.curView}, function(id, params) {
-		// TODO: this is a hack, we need to think more on what to do when a channel is created
-		if (Toutl.ChatLobby.curView == 0) {
-			Toutl.Channel.NewChannel(params.speaker, params.message, params.id);
-		}		
-	}, Toutl.Chat.HandleError);
-};
-
-Toutl.Chat.HandleError = function(id, params) {
+Toutl.Chat.HandleError = function(params) {
 	alert('Error: ' + params.message);
 };
 
-Toutl.Chat.CreateMessage = function(message, parent) {
-	Toutl.ServerConnection.CreateRequest("create_msg", {'message': message, 'parent': parent}, function(id, params) {
-		if (Toutl.ChatLobby.curView == parent) {
-			Toutl.MessageDisplay.ShowMsg(params.speaker, params.message);
-		}		
-	}, Toutl.Chat.HandleError);
-};
-
 Toutl.Chat.UpdateName = function(newName) {
-	Toutl.ServerConnection.CreateRequest('changename', {'newName': newName}, function(id, params) {
+	Toutl.ServerConnection.CreateRequest('changename', {'newName': newName}, function(params) {
 		Toutl.Landing.ChangeName(params.newName);
 	}, Toutl.Chat.HandleError);
 };
 
 Toutl.Chat.RequestView = function(channelID) {
-	Toutl.ServerConnection.CreateRequest('changeview', {'channel': channelID}, function(id, params) {
+	Toutl.ServerConnection.CreateRequest('changeview', {'channel': channelID}, function(params) {
 		if (Toutl.ChatLobby.curView != params.parent) { 
 			return; 
 		}
@@ -44,6 +27,7 @@ Toutl.Chat.RequestView = function(channelID) {
 
 $(function(){
 	// connect to the socket
+	Toutl.Inputs.Init();
 	Toutl.Landing.Init();
 	Toutl.ServerConnection.Init();
 	

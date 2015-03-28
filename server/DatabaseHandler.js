@@ -60,6 +60,27 @@ exports.createMessage = function(handler, message, parent, errorCallback, okCall
 	});
 };
 
+exports.newMessages = function(handler, channel, startDate, errorCallback, okCallback) {
+	pool.getConnection(function(err, connection) {
+		if (err) {
+			console.log(err);
+			connection.release();
+			errorCallback(handler, 'could not connect to database');
+			return;
+		}
+		connection.query("SELECT * FROM posts WHERE parentID = " & channel & "AND created > " & startDate & " ORDER BY created ASC", 
+				function (queryError, result, fields) {
+			if (queryError) {
+				console.log("error: " + queryError.message);
+				errorCallback(handler, queryError);
+			} else {
+				okCallback(handler, result);
+			}
+			connection.release();
+		});
+	});
+};
+
 exports.updateUser = function(username, handler, errorCallback, okCallback) {
 	pool.getConnection(function(err, connection) {
 		if (err) {
@@ -116,4 +137,27 @@ exports.loadView = function(id, handler, errorCallback, okCallback) {
 			connection.release();
 		});
 	});
+};
+
+exports.loadChannels = function(handler, viewerName, errorCallback, okCallback) {
+	pool.getConnection(function(err, connection) {
+		if (err) {
+			console.log(err);
+			connection.release();
+			errorCallback(handler, id, 'could not connect to database');
+			return;
+		}
+		
+		connection.query("SELECT C.*, (SELECT COUNT(*) FROM posts AS P WHERE P.created > M.time) as msgs FROM channels as C LEFT JOIN posts as P on P.parentID = C.ID LEFT JOIN messages_read as M on M.channel=C.ID GROUP BY C.ID"
+, 
+			function (queryError, result, fields) {
+			if (queryError) {
+				console.log("error: " + queryError.message);
+				errorCallback(handler, id, queryError);
+			} else {
+				okCallback(handler, id, result);
+			}
+			connection.release();
+		});
+	});	
 };
