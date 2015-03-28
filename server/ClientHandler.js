@@ -27,11 +27,12 @@ exports.Initialize = function(_socket) {
 	
 	outObj.socket.on('new_messages', function(params, id) {
 		console.log("received request for new messages: " + id + "||" + params.channel + "||" + params.messagesSince);
-		var newID = db.getNewMessages(outObj, params.channel, params.messagesSince, function(handler, caller, msg) {
+		var newID = db.getNewMessages(outObj, outObj.name, params.channel, params.messagesSince, function(handler, caller, msg) {
 			console.log("emitting error");
 			outObj.socket.emit('problem', id, {'message': msg});
 	
 		}, function(handler, messages, lastDate) {
+			console.log("out put new messages :" + lastDate + "||" + messages.length);
 			outObj.socket.emit('response', id, {'lastMsgTime': lastDate, "messages": messages});
 		});
 	});
@@ -73,7 +74,7 @@ exports.Initialize = function(_socket) {
 			console.log("emitting error");
 			outObj.socket.emit('problem', id, {'message': msg});
 		}, function(handler, parent, children) {
-			console.log('we are sending back: ' + children.length);
+			console.log('output change view: ' + children.length);
 			outObj.curView = params.channel;
 			outObj.socket.emit('response', id, {'messages': children, 'parent': params.channel});
 		});
@@ -85,9 +86,8 @@ exports.Initialize = function(_socket) {
 			console.log("emitting error");
 			outObj.socket.emit('problem', id, {'message': msg});
 		}, function(handler, children) {
-			console.log('we are sending back: ' + children.length);
-			outObj.curView = params.channel;
-			outObj.socket.emit('response', id, {'messages': children, 'parent': params.channel});
+			console.log('output load channels: ' + children.length);
+			outObj.socket.emit('response', id, {'messages': children});
 		});
 	});
 

@@ -18,7 +18,7 @@ Toutl.MessageDisplay.DisplayChannels = function(children) {
 };
 
 Toutl.MessageDisplay.DisplayComponent = function(component) {
-	children.push(component);
+	Toutl.MessageDisplay.components.push(component);
 	$("#chatTable").append(component);
 	$("#chatTable").scrollTop($("#chatTable")[0].scrollHeight);
 };

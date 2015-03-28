@@ -32,3 +32,11 @@ $(function(){
 	Toutl.ServerConnection.Init();
 	
 });
+
+Toutl.Chat.DEBUG = function(obj) {
+	console.log("object dump: ");
+	for (variable in obj) {
+		console.log("variable" + variable + "," + obj[variable]);
+	}
+	console.log("end dump");
+};

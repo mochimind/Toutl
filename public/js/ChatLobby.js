@@ -1,7 +1,7 @@
 Toutl.ChatLobby = {};
 Toutl.ChatLobby.channels = [];
 
-Toutl.ChatLoby.activeChannel = null;
+Toutl.ChatLobby.activeChannel = null;
 
 Toutl.ChatLobby.Init = function() {
 	$('#feeds').prop('disabled', true);
@@ -56,20 +56,21 @@ Toutl.ChatLobby.ReceivedNewChannel = function(params) {
 	
 	Toutl.ChatLobby.channels.push(newChan);
 	if (Toutl.ChatLobby.activeChannel == null) {
-		Toutl.Channel.DisplayChannel(newChan, false, Toutl.ChatLobby.LoadMessages);
+		Toutl.Channel.DisplayChannel(newChan, true, Toutl.ChatLobby.LoadMessages);
 	}
 	
 };
 
 Toutl.ChatLobby.LoadChannels = function() {
 	Toutl.ServerConnection.CreateRequest('loadchannels', null, function(params) {
-		if (Toutl.ChatLobby.curView != params.parent) { 
-			return; 
+		if (Toutl.ChatLobby.activeChannel != null) {
+			return;
 		}
 		
 		for (var i=0 ; i<params.messages.length ; i++) {
-			var newChan = Toutl.Channel.NewChannel(params.messages[i].id, params.messages[i].data, params.messages[i].speaker, params.messages[i].unread, null);
+			var newChan = Toutl.Channel.NewChannel(params.messages[i].ID, params.messages[i].message, params.messages[i].poster, params.messages[i].unread, null);
 			Toutl.ChatLobby.channels.push(newChan);
+			Toutl.Channel.DisplayChannel(newChan, true, Toutl.ChatLobby.LoadMessages);
 		}
 	}, Toutl.Chat.HandleError);
 };
@@ -96,7 +97,7 @@ Toutl.ChatLobby.LoadMessages = function() {
 };
 
 Toutl.ChatLobby.BackButtonClicked = function() {
-	$('#back'.off('click', Toutl.ChatLobby.BackButtonClicked));
+	$('#back').off('click', Toutl.ChatLobby.BackButtonClicked);
 	Toutl.ChatLobby.DisplayChannels();
 	Toutl.ChatLobby.activeChannel = null;
 	Toutl.ChatLobby.isLobbyMode = true;
