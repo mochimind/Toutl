@@ -23,18 +23,17 @@ Toutl.ChatLobby.Init = function() {
 };
 
 Toutl.ChatLobby.UnreadMessage = function(params) {
-	if (params.channel == Toutl.ChatLobby.activeChannel.id) {
-		// a new message came in, we need an immediate update
-		//Toutl.Channel.HandleNewMessage(Toutl.ChatLobby.activeChannel, params);
-		Toutl.Channel.GetNewMessages(Toutl.ChatLobby.activeChannel);
-		return;
-	} else {
+	if (Toutl.ChatLobby.activeChannel == null || params.channel != Toutl.ChatLobby.activeChannel.id) {
 		for (var i=0 ; i<Toutl.ChatLobby.channels.length ; i++) {
 			if (Toutl.ChatLobby.channels[i].id == params.channel) {
 				Toutl.Channel.HandleUnreadMessage(Toutl.ChatLobby.channels[i], 1);
 				return;
 			}
-		}
+		}	} else {
+		// a new message came in, we need an immediate update
+		//Toutl.Channel.HandleNewMessage(Toutl.ChatLobby.activeChannel, params);
+		Toutl.Channel.GetNewMessages(Toutl.ChatLobby.activeChannel);
+		return;
 	}
 	// conceivably, channel creation directives may come after corresponding messages
 	var newChan = Toutl.Channel.NewChannel(params.id, "", "", 0, null);

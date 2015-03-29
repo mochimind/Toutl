@@ -110,8 +110,11 @@ Toutl.Channel.BackButtonClicked = function() {
 */
 
 Toutl.Channel.HandleUnreadMessage = function(channel, count) {
-	channel.unseen += count;
-	if (!channel.expanded) {
-		channel.displayObj.children(".channelMessageCount").val(channel.unseen);
+	console.log('new message!');
+	if (channel.unseen != null) {
+		channel.unseen += count;		
+	} else {
+		channel.unseen = count;
 	}
+	channel.displayObj.children(".channelMessageCount").text(channel.unseen);
 };
