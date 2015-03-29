@@ -72,9 +72,9 @@ exports.getNewMessages = function(handler, username, channel, startDate, errorCa
 		}
 		var connectionStr ="";
 		if (startDate != "all") {
-			connectionStr = "SELECT * FROM posts WHERE parentID = " + channel + "AND created > " + startDate + " ORDER BY created ASC";
+			connectionStr = "SELECT * FROM posts WHERE parentID = '" + channel + "' AND created > '" + startDate + "' ORDER BY created ASC";
 		} else {
-			connectionStr = "SELECT * FROM posts WHERE parentID = " + channel + " ORDER BY created ASC";
+			connectionStr = "SELECT * FROM posts WHERE parentID = '" + channel + "' ORDER BY created ASC";
 		}
 		connection.query(connectionStr, function (queryError, result, fields) {
 			if (queryError) {
@@ -82,7 +82,11 @@ exports.getNewMessages = function(handler, username, channel, startDate, errorCa
 				errorCallback(handler, queryError.message);
 			} else {
 				// last result contains our latest date
-				var lastDate = toSQLDate(result[result.length-1].created);
+				if (result.length == 0) {
+					okCallback(handler, result, null);					
+				} else {
+					var lastDate = toSQLDate(result[result.length-1].created);					
+				}
 				
 				// now we need to update the messages_read table with the fact the user has read all these messages
 				connection.query('INSERT INTO messages_read (user, channel, time) VALUES ("' + username + '","' + channel + 
@@ -162,10 +166,9 @@ exports.loadChannels = function(handler, viewerName, errorCallback, okCallback) 
 		}
 		
 		connection.query("SELECT * FROM channels as C LEFT JOIN " +
-				"(SELECT COUNT(*) AS unread, P.parentID FROM posts as P " +
-				"LEFT JOIN messages_read as M on M.channel=P.parentID " +
-				"WHERE P.created > IFNULL(M.time, '2001-01-01 1:1:11') " +
-				"AND (M.user='" + viewerName + "' OR ISNULL(M.user)) GROUP BY P.parentID) O ON O.parentID=C.ID;", 
+				"(SELECT COUNT(*) AS unread, P.parentID FROM posts as P LEFT JOIN " +
+				"(SELECT * FROM messages_read WHERE messages_read.user='" + viewerName + "') as M on M.channel=P.parentID " +
+				"WHERE P.created > IFNULL(M.time, '2001-01-01 1:1:11') GROUP BY P.parentID) O ON O.parentID=C.ID;", 
 			function (queryError, result, fields) {
 			if (queryError) {
 				console.log("error: " + queryError.message);

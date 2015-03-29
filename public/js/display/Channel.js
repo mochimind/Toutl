@@ -26,6 +26,7 @@ Toutl.Channel.NewChannel = function (id, data, speaker, unseen, lastMsgTime) {
 Toutl.Channel.DisplayChannel = function(channel, summaryView, onClick) {
 	console.log("displaying: " + channel.id + "||" + channel.displayObj);
 	channel.summaryView = summaryView;
+	Toutl.MessageDisplay.DisplayComponent(channel.displayObj);
 	
 	if (!summaryView) {
 		Toutl.ChatLobby.activeChannel = channel;
@@ -40,12 +41,14 @@ Toutl.Channel.DisplayChannel = function(channel, summaryView, onClick) {
 		Toutl.ServerConnection.CreateRequest('new_messages', 
 				{messagesSince: messagesSince, 
 				channel: channel.id}, function(params) {
-					channel.lastMsgTime = params.lastMsgTime;
-					channel.unseen = 0;
-					for (var i=0 ; i<params.messages.length ; i++) {
-						var newMsg = Toutl.Message.NewMessage(params.messages[i].poster, params.messages[i].msg, params.messages[i].created);
-						channel.children.push(newMsg);
-						Toutl.Message.DisplayMessage(newMsg);
+					if (params.lastMsgTime != null) {
+						channel.lastMsgTime = params.lastMsgTime;
+						channel.unseen = 0;
+						for (var i=0 ; i<params.messages.length ; i++) {
+							var newMsg = Toutl.Message.NewMessage(params.messages[i].poster, params.messages[i].msg, params.messages[i].created);
+							channel.children.push(newMsg);
+							Toutl.Message.DisplayMessage(newMsg);
+						}						
 					}
 		}, Toutl.ChatLobby.HandleError);
 		Toutl.ServerConnection.RegisterListener('newmsg', function(params){
@@ -55,7 +58,6 @@ Toutl.Channel.DisplayChannel = function(channel, summaryView, onClick) {
 		channel.displayObj.children(".channelMessageCount").show();
 		channel.displayObj.on('click', {'channel': channel, 'onClick': onClick}, Toutl.Channel.HandleClick);
 	}
-	Toutl.MessageDisplay.DisplayComponent(channel.displayObj);
 };
 
 Toutl.Channel.HandleNewMessage = function(channel, params) {
