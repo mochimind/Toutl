@@ -21,7 +21,7 @@ Toutl.Inputs.SubmitMessage = function() {
 	var msg = $("#chatInput").val().trim();
 	if (msg.length > 0) {
 		$("#chatInput").val("");
-		if (Toutl.Inputs.isLobbyMode) {
+		if (Toutl.ChatLobby.activeChannel == null) {
 			Toutl.ChatLobby.UserChannel(msg);
 		} else {
 			Toutl.Channel.UserMessage(msg);

@@ -11,9 +11,34 @@ var pool = mysql.createPool({
 });
 
 // TODO: eliminate the error returns from the database: this will help hackers figure out the configurations
-
+// TODO: tighten up the error checking & escape the messages to remove sql injections
 exports.createChannel = function (handler, message, errorCallback, okCallback) {
-	exports.createMessage(handler, message, 0, errorCallback, okCallback);
+	pool.getConnection(function(err, connection) {
+		if (err) {
+			console.log(err);
+			conection.release();
+			errorCallback(handler, message, 'could not connect to database');
+			return;
+		}
+		
+		var newDate = toSQLDate(new Date());
+		// really should check for sql injection here
+		var query = 'INSERT INTO channels (message, poster, time) values ("' + 
+			message + '","' +
+			handler.name + '","' +
+			newDate + '")';
+		console.log("query string is: " + query);
+		connection.query(query, 
+			function (insertError, result) {
+			if (insertError) {
+				console.log("error: " + insertError.message);
+				errorCallback(handler, message, insertError.message);
+			} else {
+				okCallback(handler, message, result.insertId);	
+			}
+			connection.release();
+		});
+	});
 };
 
 exports.createMessage = function(handler, message, parent, errorCallback, okCallback) {
@@ -179,7 +204,8 @@ exports.loadChannels = function(handler, viewerName, errorCallback, okCallback) 
 		connection.query("SELECT * FROM channels as C LEFT JOIN " +
 				"(SELECT COUNT(*) AS unread, P.parentID FROM posts as P LEFT JOIN " +
 				"(SELECT * FROM messages_read WHERE messages_read.user='" + viewerName + "') as M on M.channel=P.parentID " +
-				"WHERE P.created > IFNULL(M.time, '2001-01-01 1:1:11') GROUP BY P.parentID) O ON O.parentID=C.ID;", 
+				"WHERE P.created > IFNULL(M.time, '2001-01-01 1:1:11') GROUP BY P.parentID) O ON O.parentID=C.ID " +
+				"ORDER BY time ASC;", 
 			function (queryError, result, fields) {
 			if (queryError) {
 				console.log("error: " + queryError.message);

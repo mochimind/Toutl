@@ -16,7 +16,7 @@ Toutl.ChatLobby.Init = function() {
 	// TODO: add listeners for new channels
 	Toutl.ServerConnection.RegisterListener('newmsg', Toutl.ChatLobby.UnreadMessage);	
 	// TODO: add listeners for channels getting new messages
-	Toutl.ServerConnection.RegisterListener('new_channel', Toutl.ChatLobby.ReceivedNewChannel);
+	Toutl.ServerConnection.RegisterListener('newchan', Toutl.ChatLobby.ReceivedNewChannel);
 
 	$("#chatBody").show();
 	Toutl.ChatLobby.LoadChannels();
@@ -29,7 +29,8 @@ Toutl.ChatLobby.UnreadMessage = function(params) {
 				Toutl.Channel.HandleUnreadMessage(Toutl.ChatLobby.channels[i], 1);
 				return;
 			}
-		}	} else {
+		}
+	} else {
 		// a new message came in, we need an immediate update
 		//Toutl.Channel.HandleNewMessage(Toutl.ChatLobby.activeChannel, params);
 		Toutl.Channel.GetNewMessages(Toutl.ChatLobby.activeChannel);
@@ -37,10 +38,11 @@ Toutl.ChatLobby.UnreadMessage = function(params) {
 	}
 	// conceivably, channel creation directives may come after corresponding messages
 	var newChan = Toutl.Channel.NewChannel(params.id, "", "", 0, null);
-	Toutl.ChatLobby.push(newChan);
+	Toutl.ChatLobby.channels.push(newChan);
 };
 
 Toutl.ChatLobby.ReceivedNewChannel = function(params) {
+	console.log('received new channel' + params.id);
 	var chanExists = false;
 	for (var i=0 ; i<Toutl.ChatLobby.channels.length ; i++) {
 		if (Toutl.ChatLobby.channels[i].id == params.id) {
@@ -49,19 +51,22 @@ Toutl.ChatLobby.ReceivedNewChannel = function(params) {
 		}
 	}
 	if (chanExists) {
+		console.log("channel exists!");
 		Toutl.ChatLobby.channels[i].data = params.data;
 		Toutl.ChatLobby.channels[i].speaker = params.speaker;
-		Toutl.ChatLobby.channels[i].unseen = params.messages;		
+		Toutl.ChatLobby.channels[i].unseen = 0;		
 	} else {
+		console.log('creating channel');
 		var newChan = Toutl.Channel.NewChannel(params.id,
 				params.data,
 				params.speaker,
-				params.messages,
-				null);		
+				0,
+				null);
 	}
 	
 	Toutl.ChatLobby.channels.push(newChan);
 	if (Toutl.ChatLobby.activeChannel == null) {
+		console.log('displaying new channel');
 		Toutl.Channel.DisplayChannel(newChan, true, Toutl.ChatLobby.LoadMessages);
 	}
 	
@@ -110,12 +115,14 @@ Toutl.ChatLobby.BackButtonClicked = function() {
 };
 
 Toutl.ChatLobby.UserChannel = function(message) {
-	Toutl.ServerConnection.CreateRequest('create_chan', {'message': message, 'parent': 0}, function(params) {
+	Toutl.ServerConnection.CreateRequest('create_chan', {'message': message}, function(params) {
 		// TODO: this is a hack, we need to think more on what to do when a channel is created
 		var newChan = Toutl.Channel.NewChannel(params.id, params.message, params.speaker, 0, null);
 		
 		// TODO: this is a hack, there can be multiple lobbies
-		if (Toutl.Channel.currentChannel == null) {
+		if (Toutl.ChatLobby.activeChannel == null) {
+			Toutl.MessageDisplay.ClearMessageDisplay();
+			Toutl.ChatLobby.LoadMessages();
 			Toutl.Channel.DisplayChannel(newChan, false, Toutl.ChatLobby.LoadMessages);
 		}
 		Toutl.ChatLobby.channels.push(newChan);

@@ -22,11 +22,6 @@ Toutl.ServerConnection.Init = function() {
 		if (request == undefined) { return; }
 		
 		request.errCallback(params);
-	});
-	
-	Toutl.ServerConnection.socket.on('newchan', function(poster, msg, chanID) {
-		// TODO: this is a hack for testing, fix
-		Toutl.Channel.NewChannel(poster, msg, chanID);
 	});	
 };
 

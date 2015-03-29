@@ -17,7 +17,7 @@ exports.newChannel = function(channelID, caller, message) {
 	var clen = clients.length;
 	for (var i=0 ; i<clen ; i++) {
 		if (clients[i] != caller) {
-			console.log("broadcasting chan: " + clients[i].name + "||" + message);			
+			console.log("broadcasting chan: " + clients[i].name + "||" + message + "||" + channelID);			
 			handlers.handleNewChannel(clients[i], caller.name, message, channelID);
 		} else {
 			console.log('skipped broadcasting');
