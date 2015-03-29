@@ -42,11 +42,13 @@ exports.createMessage = function(handler, message, parent, errorCallback, okCall
 			return;
 		}
 		
+		var newDate = toSQLDate(new Date());
 		// really should check for sql injection here
-		var query = 'INSERT INTO posts (msg, parentID, poster) values ("' + 
+		var query = 'INSERT INTO posts (msg, parentID, poster, created) values ("' + 
 			message + '","' +
 			parent + '","' +
-			handler.name + '")';
+			handler.name + '","' +
+			newDate + '")';
 		console.log("query string is: " + query);
 		connection.query(query, 
 			function (insertError, result) {
@@ -55,7 +57,16 @@ exports.createMessage = function(handler, message, parent, errorCallback, okCall
 				errorCallback(handler, message, insertError.message);
 			} else {
 				//console.log("test: " + util.inspect(result, false, null));
-				okCallback(handler, message, result.insertId);	
+				// consider factoring this code into a  function, however, messy since it's asynchronous
+				connection.query('INSERT INTO messages_read (user, channel, time) VALUES ("' + handler.name + '","' + parent + 
+					'","' + newDate + '") ON DUPLICATE KEY Update time=VALUES(time)', function(queryError, updateResult, fields) {
+					if (queryError) {
+						console.log("error: " + queryError.message);
+						errorCallback(handler, queryError.message);
+					} else {
+						okCallback(handler, message, result.insertId, newDate);	
+					}
+				});
 			}
 			connection.release();
 		});

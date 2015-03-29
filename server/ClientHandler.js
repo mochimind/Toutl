@@ -55,11 +55,11 @@ exports.Initialize = function(_socket) {
 		var newID = db.createMessage(outObj, params.message, params.parent, function(handler, caller, msg) {
 			console.log("emitting error");
 			outObj.socket.emit('problem', id, {'message': msg});
-		}, function(handler, msg, chanID) {
+		}, function(handler, msg, chanID, newTime) {
 			console.log("confirming: " + handler + "||" + handler.socket);
-			outObj.socket.emit('response', id, {'speaker': outObj.name, 'message': msg});
+			outObj.socket.emit('response', id, {'speaker': outObj.name, 'message': msg, 'lastMsgTime': newTime});
+			switchbox.newMessage(params.parent, outObj, params.message, newTime);
 		});
-		switchbox.newMessage(params.parent, outObj, params.message);
 	});
 	
 	outObj.socket.on("changename", function(params, id) {
@@ -98,20 +98,20 @@ exports.Initialize = function(_socket) {
 		// TODO: may need to kill socket to finish GC
 		outObj.socket = undefined;
 	});	
-
 };
 
-exports.handleNewMessage = function(handler, speaker, message, chanID) {
+exports.handleNewMessage = function(handler, speaker, message, chanID, time) {
 	console.log("check: " + handler.curView + "||" + chanID);
-	if (handler.curView == chanID) {
-		handler.socket.emit('newmsg', speaker, message, chanID);
-	}
+	// this implementation is a bit inefficient because it sends the full message to everyone which increases bandwidth usage
+	//handler.socket.emit('newmsg', {'channel': chanID, 'poster': speaker, 'msg': message, 'lastMsgTime': time});
+	// TODO: this implementation sends less data, but requires one more database action
+	handler.socket.emit('newmsg', {'channel': chanID});
 };
 
 exports.handleNewChannel = function(handler, speaker, message, chanID) {
 	// TODO: this is a hack, implement this properly
 	if (handler.curView == 0) {
-		handler.socket.emit('newchan', speaker, message, chanID);		
+		handler.socket.emit('newchan', speaker, message, chanID);
 	}
 };
 

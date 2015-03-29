@@ -14,7 +14,7 @@ Toutl.ChatLobby.Init = function() {
 	$('#settings').click(Toutl.ChatLobby.LoadSettings);
 
 	// TODO: add listeners for new channels
-	Toutl.ServerConnection.RegisterListener('unread_message', Toutl.ChatLobby.UnreadMessage);	
+	Toutl.ServerConnection.RegisterListener('newmsg', Toutl.ChatLobby.UnreadMessage);	
 	// TODO: add listeners for channels getting new messages
 	Toutl.ServerConnection.RegisterListener('new_channel', Toutl.ChatLobby.ReceivedNewChannel);
 
@@ -23,10 +23,17 @@ Toutl.ChatLobby.Init = function() {
 };
 
 Toutl.ChatLobby.UnreadMessage = function(params) {
-	for (var i=0 ; i<Toutl.ChatLobby.channels.length ; i++) {
-		if (Toutl.ChatLobby.channels[i].id == params.id) {
-			Toutl.Channel.HandleUnreadMessage(Toutl.ChatLobby.channels[i], params.count);
-			return;
+	if (params.channel == Toutl.ChatLobby.activeChannel.id) {
+		// a new message came in, we need an immediate update
+		//Toutl.Channel.HandleNewMessage(Toutl.ChatLobby.activeChannel, params);
+		Toutl.Channel.GetNewMessages(Toutl.ChatLobby.activeChannel);
+		return;
+	} else {
+		for (var i=0 ; i<Toutl.ChatLobby.channels.length ; i++) {
+			if (Toutl.ChatLobby.channels[i].id == params.channel) {
+				Toutl.Channel.HandleUnreadMessage(Toutl.ChatLobby.channels[i], 1);
+				return;
+			}
 		}
 	}
 	// conceivably, channel creation directives may come after corresponding messages

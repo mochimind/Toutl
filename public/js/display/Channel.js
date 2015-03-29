@@ -23,6 +23,27 @@ Toutl.Channel.NewChannel = function (id, data, speaker, unseen, lastMsgTime) {
 	return outObj;
 };
 
+Toutl.Channel.GetNewMessages = function(channel) {
+	var messagesSince = "all";
+	if (channel.children.length != 0) {
+		messagesSince = channel.lastMsgTime;
+	}
+	Toutl.ServerConnection.CreateRequest('new_messages', 
+			{messagesSince: messagesSince, 
+			channel: channel.id}, function(params) {
+				if (params.lastMsgTime != null) {
+					channel.lastMsgTime = params.lastMsgTime;
+					channel.unseen = 0;
+					for (var i=0 ; i<params.messages.length ; i++) {
+						var newMsg = Toutl.Message.NewMessage(params.messages[i].poster, params.messages[i].msg, params.messages[i].created);
+						channel.children.push(newMsg);
+						Toutl.Message.DisplayMessage(newMsg);
+					}						
+				}
+	}, Toutl.ChatLobby.HandleError);
+	
+};
+
 Toutl.Channel.DisplayChannel = function(channel, summaryView, onClick) {
 	console.log("displaying: " + channel.id + "||" + channel.displayObj);
 	channel.summaryView = summaryView;
@@ -34,33 +55,18 @@ Toutl.Channel.DisplayChannel = function(channel, summaryView, onClick) {
 		for (var i=0 ; i<channel.children.length ; i++) {
 			Toutl.Message.DisplayMessage(channel.children[i]);
 		}
-		var messagesSince = "all";
-		if (channel.children.length != 0) {
-			messagesSince = channel.lastMsgTime;
-		}
-		Toutl.ServerConnection.CreateRequest('new_messages', 
-				{messagesSince: messagesSince, 
-				channel: channel.id}, function(params) {
-					if (params.lastMsgTime != null) {
-						channel.lastMsgTime = params.lastMsgTime;
-						channel.unseen = 0;
-						for (var i=0 ; i<params.messages.length ; i++) {
-							var newMsg = Toutl.Message.NewMessage(params.messages[i].poster, params.messages[i].msg, params.messages[i].created);
-							channel.children.push(newMsg);
-							Toutl.Message.DisplayMessage(newMsg);
-						}						
-					}
-		}, Toutl.ChatLobby.HandleError);
-		Toutl.ServerConnection.RegisterListener('newmsg', function(params){
-			Toutl.Channel.HandleNewMessage(channel, params);
-		});
+		Toutl.Channel.GetNewMessages(channel);
 	} else {
 		channel.displayObj.children(".channelMessageCount").show();
+		channel.displayObj.children(".channelMessageCount").text(channel.unseen == null ? 0 : channel.unseen);
+		console.log("value is: " + channel.displayObj.children(".channelMessageCount").text());
 		channel.displayObj.on('click', {'channel': channel, 'onClick': onClick}, Toutl.Channel.HandleClick);
 	}
 };
 
 Toutl.Channel.HandleNewMessage = function(channel, params) {
+	console.log("handling new msg: " + channel.id);
+	Toutl.Chat.DEBUG(params);
 	channel.lastMsgTime = params.lastMsgTime;
 	channel.unseen = 0;
 	var newMsg = Toutl.Message.NewMessage(params.poster, params.msg, params.created);
@@ -69,7 +75,6 @@ Toutl.Channel.HandleNewMessage = function(channel, params) {
 
 Toutl.Channel.HideChannel = function(channel) {
 	if (!channel.summaryView) {
-		Toutl.ServerConection.RemoveListener('newmsg');
 		Toutl.ChatLoby.activeChannel = null;
 	} else {
 		channel.displayObj.off('click', Toutl.Channel.HandleClick);
@@ -84,13 +89,14 @@ Toutl.Channel.HandleClick = function(event) {
 };
 
 Toutl.Channel.UserMessage = function(message) {
-	var parent = Toutl.ChatLoby.activeChannel;
+	var parent = Toutl.ChatLobby.activeChannel;
 	Toutl.ServerConnection.CreateRequest("create_msg", {'message': message, 'parent': parent.id}, function(params) {
 		var newMsg = Toutl.Message.NewMessage(params.speaker, params.message, params.time);
-		if (Toutl.ChatLoby.activeChannel.id == parent.id) {
+		if (Toutl.ChatLobby.activeChannel.id == parent.id) {
 			Toutl.Message.DisplayMessage(newMsg);
 		}
 		parent.children.push(newMsg);
+		parent.lastMsgTime = params.lastMsgTime;
 	}, Toutl.Chat.HandleError);
 };
 

@@ -25,13 +25,13 @@ exports.newChannel = function(channelID, caller, message) {
 	}
 };
 
-exports.newMessage = function(parentID, caller, message) {
+exports.newMessage = function(parentID, caller, message, postTime) {
 	var clen = clients.length;
 	console.log("we have: " + clen);
 	for (var i=0 ; i<clen ; i++) {
 		if (clients[i] != caller) {
 			console.log("broadcasting msg: " + clients[i].name + "||" + message);			
-			handlers.handleNewMessage(clients[i], caller.name, message, parentID);
+			handlers.handleNewMessage(clients[i], caller.name, message, parentID, postTime);
 		} else {
 			console.log('skipped broadcasting');
 		}

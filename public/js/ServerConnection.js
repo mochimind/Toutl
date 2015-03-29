@@ -24,12 +24,6 @@ Toutl.ServerConnection.Init = function() {
 		request.errCallback(params);
 	});
 	
-	Toutl.ServerConnection.socket.on('newmsg', function(poster, msg) {
-		// TODO: this is a hack for testing, fix
-		console.log("hit");
-		Toutl.MessageDisplay.ShowMsg(poster, msg);
-	});
-
 	Toutl.ServerConnection.socket.on('newchan', function(poster, msg, chanID) {
 		// TODO: this is a hack for testing, fix
 		Toutl.Channel.NewChannel(poster, msg, chanID);
